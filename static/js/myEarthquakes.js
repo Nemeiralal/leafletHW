@@ -1,19 +1,20 @@
 const link1 = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
-    //console.log(link1)
+console.log(link1)
 const link2 = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
-    //console.log(link2)
+console.log(link2)
 
 // Grabbing our GeoJSON data..
-(async function() {
-    const EQ_data = await d3.json(link1);
-    // Creating a GeoJSON layer with the retrieved data
-    L.geoJson(EQ_data).addTo(map);
-})()
-(async function() {
+//(async function() {
+//const EQ_data = await d3.json(link1);
+// Creating a GeoJSON layer with the retrieved data
+//L.geoJson(EQ_data).addTo(myEQmap);
+//})()
+/*(async function() {
     const Plate_data = await d3.json(link2);
     // Creating a GeoJSON layer with the retrieved data
-    L.geoJson(Plate_data).addTo(map);
-})()
+    //L.geoJson(Plate_data).addTo(myEQmap);
+})()*/
+// It did not read from data grabbed, but directly from links!!
 
 function marker(magnitude) {
     return magnitude * 4;
@@ -22,7 +23,7 @@ function marker(magnitude) {
 var earthquakes = new L.LayerGroup();
 var plateBoundary = new L.LayerGroup();
 
-d3.json(EQ_data, function(geoJson) {
+d3.json(link1, function(geoJson) {
     L.geoJSON(geoJson.features, {
         pointToLayer: function(geoJsonPoint, latlng) {
             return L.circleMarker(latlng, { radius: marker(geoJsonPoint.properties.mag) });
@@ -47,18 +48,16 @@ d3.json(EQ_data, function(geoJson) {
     createMap(earthquakes);
 });
 
-d3.json(Plate_data, function(geoJson) {
+d3.json(link2, function(geoJson) {
     L.geoJSON(geoJson.features, {
         style: function(geoJsonFeature) {
             return {
                 weight: 2,
-                color: 'magenta'
+                color: 'purple'
             }
         },
     }).addTo(plateBoundary);
 })
-
-
 
 function createMap() {
     var streetMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -107,7 +106,6 @@ function createMap() {
         "Earthquakes": earthquakes,
     };
 
-
     // adding layers to my EQmap
     L.control.layers(baseLayers, overlays).addTo(myEQmap);
 
@@ -117,15 +115,15 @@ function createMap() {
     legend.onAdd = function(map) {
 
         var div = L.DomUtil.create('div', 'info legend'),
-            magnitude = [0, 1, 2, 3, 4, 5],
+            severity = [0, 1, 2, 3, 4, 5],
             labels = [];
 
-        div.innerHTML += "<h3 style='margin:4px'>Magnitude</h3>"
+        div.innerHTML += "<h3 style='margin:4px'>Severity</h3>"
 
-        for (var i = 0; i < magnitude.length; i++) {
+        for (var i = 0; i < severity.length; i++) {
             div.innerHTML +=
-                '<i style="background:' + ColorRating(magnitude[i] + 1) + '"></i> ' +
-                magnitude[i] + (magnitude[i + 1] ? '&ndash;' + magnitude[i + 1] + '<br>' : '+');
+                '<i style="background:' + ColorRating(severity[i] + 1) + '"></i> ' +
+                severity[i] + (severity[i + 1] ? '&ndash;' + severity[i + 1] + '<br>' : '+');
         }
 
         return div;
