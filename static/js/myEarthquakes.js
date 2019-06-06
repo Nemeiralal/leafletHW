@@ -1,21 +1,7 @@
-// Creating map object
-var map = L.map("myEQmap", {
-    center: [36.7783, -119.4179],
-    zoom: 6
-});
-
-// Adding tile layer
-L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.streets",
-    accessToken: API_KEY
-}).addTo(map);
-
 const link1 = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
-console.log(link1)
+    //console.log(link1)
 const link2 = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
-console.log(link2)
+    //console.log(link2)
 
 // Grabbing our GeoJSON data..
 (async function() {
@@ -29,166 +15,136 @@ console.log(link2)
     L.geoJson(Plate_data).addTo(map);
 })()
 
-// function markerSize(magnitude) {
-//     return magnitude * 4;
-// };
+function marker(magnitude) {
+    return magnitude * 4;
+};
+
+var earthquakes = new L.LayerGroup();
+var plateBoundary = new L.LayerGroup();
+
+d3.json(EQ_data, function(geoJson) {
+    L.geoJSON(geoJson.features, {
+        pointToLayer: function(geoJsonPoint, latlng) {
+            return L.circleMarker(latlng, { radius: marker(geoJsonPoint.properties.mag) });
+        },
+
+        style: function(geoJsonFeature) {
+            return {
+                fillColor: ColorRating(geoJsonFeature.properties.mag),
+                fillOpacity: 0.7,
+                weight: 0.1,
+                color: 'blue'
+
+            }
+        },
+
+        onEachFeature: function(feature, layer) {
+            layer.bindPopup(
+                "<h4 style='text-align:center;'>" + new Date(feature.properties.time) +
+                "</h4> <hr> <h5 style='text-align:center;'>" + feature.properties.title + "</h5>");
+        }
+    }).addTo(earthquakes);
+    createMap(earthquakes);
+});
+
+d3.json(Plate_data, function(geoJson) {
+    L.geoJSON(geoJson.features, {
+        style: function(geoJsonFeature) {
+            return {
+                weight: 2,
+                color: 'magenta'
+            }
+        },
+    }).addTo(plateBoundary);
+})
 
 
-// var earthquakes = new L.LayerGroup();
 
-// d3.json(API_quakes, function(geoJson) {
-//     L.geoJSON(geoJson.features, {
-//         pointToLayer: function(geoJsonPoint, latlng) {
-//             return L.circleMarker(latlng, { radius: markerSize(geoJsonPoint.properties.mag) });
-//         },
+function createMap() {
+    var streetMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 15,
+        id: 'mapbox.streets',
+        accessToken: API_KEY
+    });
 
-//         style: function(geoJsonFeature) {
-//             return {
-//                 fillColor: Color(geoJsonFeature.properties.mag),
-//                 fillOpacity: 0.7,
-//                 weight: 0.1,
-//                 color: 'black'
+    var satellite = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 15,
+        id: 'mapbox.satellite',
+        accessToken: API_KEY
+    });
 
-//             }
-//         },
+    var darkMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 15,
+        id: 'mapbox.dark',
+        accessToken: API_KEY
+    });
 
-//         onEachFeature: function(feature, layer) {
-//             layer.bindPopup(
-//                 "<h4 style='text-align:center;'>" + new Date(feature.properties.time) +
-//                 "</h4> <hr> <h5 style='text-align:center;'>" + feature.properties.title + "</h5>");
-//         }
-//     }).addTo(earthquakes);
-//     createMap(earthquakes);
-// });
+    var highCntrstMp = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 15,
+        id: 'mapbox.high-contrast',
+        accessToken: API_KEY
+    });
 
-// var plateBoundary = new L.LayerGroup();
-
-// d3.json(API_plates, function(geoJson) {
-//     L.geoJSON(geoJson.features, {
-//         style: function(geoJsonFeature) {
-//             return {
-//                 weight: 2,
-//                 color: 'magenta'
-//             }
-//         },
-//     }).addTo(plateBoundary);
-// })
-
-// function chooseColor(magnitude) {
-//     switch (magnitude) {
-//         case ">5":
-//             return "red";
-//         case ">4":
-//             return "darkorange";
-//         case ">3":
-//             return "lightorange";
-//         case ">2":
-//             return "yellow";
-//         case ">1":
-//             return "darkgreen";
-//         default:
-//             return "pink";
-//     }
-// }
-// function Color(magnitude) {
-//     if (magnitude > 5) {
-//         return 'red'
-//     } else if (magnitude > 4) {
-//         return 'darkorange'
-//     } else if (magnitude > 3) {
-//         return 'tan'
-//     } else if (magnitude > 2) {
-//         return 'yellow'
-//     } else if (magnitude > 1) {
-//         return 'darkgreen'
-//     } else {
-//         return 'lightgreen'
-//     }
-// };
-
-// function createMap() {
-
-//     var highContrastMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-//         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-//         maxZoom: 18,
-//         id: 'mapbox.high-contrast',
-//         accessToken: API_KEY
-//     });
-
-//     var streetMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-//         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-//         maxZoom: 18,
-//         id: 'mapbox.streets',
-//         accessToken: API_KEY
-//     });
-
-//     var darkMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-//         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-//         maxZoom: 18,
-//         id: 'mapbox.dark',
-//         accessToken: API_KEY
-//     });
+    var baseLayers = {
+        "Satellite": satellite,
+        "Street": streetMap,
+        "High Contrast": highCntrstMp,
+        "Dark": darkMap
+    };
+    // my map container bin
+    var myEQmap = L.map('myEQmap', {
+        center: [36.7783, -119.4179],
+        zoom: 4,
+        layers: [satellite, earthquakes, plateBoundary]
+    });
+    // determining overlays from two data sources
+    var overlays = {
+        "Plate Boundaries": plateBoundary,
+        "Earthquakes": earthquakes,
+    };
 
 
-//     var satellite = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-//         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-//         maxZoom: 18,
-//         id: 'mapbox.satellite',
-//         accessToken: API_KEY
-//     });
+    // adding layers to my EQmap
+    L.control.layers(baseLayers, overlays).addTo(myEQmap);
 
+    // legend showing color mapped magnitudes
+    var legend = L.control({ position: 'bottomleft' });
 
-//     var baseLayers = {
-//         "High Contrast": highContrastMap,
-//         "Street": streetMap,
-//         "Dark": darkMap,
-//         "Satellite": satellite
-//     };
+    legend.onAdd = function(map) {
 
-//     var overlays = {
-//         "Earthquakes": earthquakes,
-//         "Plate Boundaries": plateBoundary,
-//     };
+        var div = L.DomUtil.create('div', 'info legend'),
+            magnitude = [0, 1, 2, 3, 4, 5],
+            labels = [];
 
-//     var mymap = L.map('mymap', {
-//         center: [40, -99],
-//         zoom: 4.3,
-//         // timeDimension: true,
-//         // timeDimensionOptions: {
-//         //     timeInterval: "2018-04-01/2018-04-05",
-//         //     period: "PT1H"
-//         // },
-//         // timeDimensionControl: true,
-//         layers: [streetMap, earthquakes, plateBoundary]
-//     });
+        div.innerHTML += "<h3 style='margin:4px'>Magnitude</h3>"
 
-//     L.control.layers(baseLayers, overlays).addTo(mymap);
-//     // L.timeDimension.earthquakes.geoJson(earthquakes).addTo(mymap);
-//     // L.control.timeDimension().addTo(mymap);
-//     // var player = new L.TimeDimension.Player({}, timeDimension).addTo(mymap);
+        for (var i = 0; i < magnitude.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + ColorRating(magnitude[i] + 1) + '"></i> ' +
+                magnitude[i] + (magnitude[i + 1] ? '&ndash;' + magnitude[i + 1] + '<br>' : '+');
+        }
 
-//     // var tdWmsLayer = L.timeDimension.layer.wms(wmsLayer);
-//     // tdWmsLayer.addTo(map);
+        return div;
+    };
+    legend.addTo(myEQmap);
+};
 
-//     var legend = L.control({ position: 'bottomright' });
-
-//     legend.onAdd = function(map) {
-
-//         var div = L.DomUtil.create('div', 'info legend'),
-//             magnitude = [0, 1, 2, 3, 4, 5],
-//             labels = [];
-
-//         div.innerHTML += "<h4 style='margin:4px'>Magnitude</h4>"
-
-//         for (var i = 0; i < magnitude.length; i++) {
-//             div.innerHTML +=
-//                 '<i style="background:' + Color(magnitude[i] + 1) + '"></i> ' +
-//                 magnitude[i] + (magnitude[i + 1] ? '&ndash;' + magnitude[i + 1] + '<br>' : '+');
-//         }
-
-//         return div;
-//     };
-//     legend.addTo(mymap);
-// }
-
-// // createMap()
+function ColorRating(magnitude) {
+    if (magnitude > 5) {
+        return 'red'
+    } else if (magnitude > 4) {
+        return 'orange'
+    } else if (magnitude > 3) {
+        return 'tan'
+    } else if (magnitude > 2) {
+        return 'yellow'
+    } else if (magnitude > 1) {
+        return 'darkgreen'
+    } else {
+        return 'lightgreen'
+    }
+}
