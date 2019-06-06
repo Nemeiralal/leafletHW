@@ -1,7 +1,7 @@
 // Creating map object
 var map = L.map("myEQmap", {
     center: [36.7783, -119.4179],
-    zoom: 11
+    zoom: 6
 });
 
 // Adding tile layer
@@ -14,8 +14,8 @@ L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 
 const link1 = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 console.log(link1)
-    // const link2 = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
-    // console.log(link2)
+const link2 = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
+console.log(link2)
 
 // Grabbing our GeoJSON data..
 (async function() {
@@ -23,11 +23,11 @@ console.log(link1)
     // Creating a GeoJSON layer with the retrieved data
     L.geoJson(EQ_data).addTo(map);
 })()
-// (async function() {
-//     const Plate_data = await d3.json(link2);
-//     // Creating a GeoJSON layer with the retrieved data
-//     L.geoJson(Plate_data).addTo(map);
-// })()
+(async function() {
+    const Plate_data = await d3.json(link2);
+    // Creating a GeoJSON layer with the retrieved data
+    L.geoJson(Plate_data).addTo(map);
+})()
 
 // function markerSize(magnitude) {
 //     return magnitude * 4;
